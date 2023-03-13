@@ -17,15 +17,17 @@ namespace QuanLiTuyenXeBusDalat.Data
         public string LoaiXe { get; set; }
 
         [Range(0,int.MaxValue)] // Giá trị số ghế phải lớn hơn 0 
-        public int SoGhe { get; set; }
+        public int SoGhe { get; set; } 
 
-
+        [Range(0,float.MaxValue)]
         public float CongSuat { get; set; }
 
         public string ChuKyBaoHanh { get; set; }
-
         
         public DateTime NgaySX { get; set; }
+        public int MaTuyen { get; set; }
+        [ForeignKey("MaTuyen")]
+        public Tuyen Tuyen { get; set; }
 
         public virtual ICollection<TaiXe> TaiXes { get; set; }
     }

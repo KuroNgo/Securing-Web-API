@@ -26,9 +26,24 @@ namespace QuanLiTuyenXeBusDalat
             {
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB"));
             });
+
+            #region CORS
+            // TODO: CORS
+            // Bật cors
+            services.AddCors(options => options.AddPolicy("MyCors", build =>
+            {
+                // Chỉ cho phép một vài trang web kết nối đến API
+                build.WithOrigins("https://hienlth.info", "https://localhost:3000");
+                // Cho phép mọi trang web kết nối đến API
+                build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+            }));
+
+            #endregion
+
             //services.AddScoped<ICategoryRepository, LoaiRepository>();
             //services.AddScoped<ICategoryRepository, CategoryRepositoryInMemory>();
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+
             // Dùng để mã hóa JWT
             // JWT dùng secretKey để sài
             // Thuật toán mã hóa chỉ sử dụng trên bit cần phải convert về mảng byte
@@ -60,26 +75,31 @@ namespace QuanLiTuyenXeBusDalat
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if(env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "QuanLiTuyenXeBusDalat v1"));
-                
-                app.UseHttpsRedirection();
-
-
-                app.UseRouting();
-
-                // Authentication phải đặt trước Authorization
-                app.UseAuthentication();
-                app.UseAuthorization();
-
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                });
             }
+
+            #region CORS
+            app.UseCors("MyCors");
+            #endregion
+
+            app.UseHttpsRedirection();
+
+
+            app.UseRouting();
+
+            // Authentication phải đặt trước Authorization
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+
         }
     }
 }

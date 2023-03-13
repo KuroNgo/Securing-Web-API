@@ -8,6 +8,9 @@ namespace QuanLiTuyenXeBusDalat.Data
     {
         [Key]
         public int MaTuyen { get; set; }
+        public int MaDonVi { get; set; }
+        [ForeignKey("MaDonVi")]
+        public DonViQuanLiXe DonViQuanLiXe { get; set; }
         public string TenTuyen { get; set; }
         public DateTime ThoiGianBatDau { get; set; }
         public DateTime ThoiGianKetThuc { get; set; }
