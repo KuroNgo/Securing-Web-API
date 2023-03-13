@@ -10,6 +10,7 @@ namespace QuanLiTuyenXeBusDalat.Data
         public int MaDonVi { get; set; }
         public string TenDonVi { get; set; }
         public string DiaChi { get; set; }
-        public int MyProperty { get; set; }
+        public string SoDienThoai { get; set; }
+        public string Email { get; set; }
     }
 }
