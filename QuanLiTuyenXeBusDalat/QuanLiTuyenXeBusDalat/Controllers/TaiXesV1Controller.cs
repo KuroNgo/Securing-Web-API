@@ -6,7 +6,11 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TaiXesController : ControllerBase
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
+
+    public class TaiXesV1Controller : ControllerBase
     {
         public static List<TaiXe> taiXes = new List<TaiXe>();
 

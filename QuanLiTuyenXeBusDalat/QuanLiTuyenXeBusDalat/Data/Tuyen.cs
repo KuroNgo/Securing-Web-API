@@ -12,11 +12,15 @@ namespace QuanLiTuyenXeBusDalat.Data
         [ForeignKey("MaDonVi")]
         public DonViQuanLiXe DonViQuanLiXe { get; set; }
         public string TenTuyen { get; set; }
-        public DateTime ThoiGianBatDau { get; set; }
-        public DateTime ThoiGianKetThuc { get; set; }
-        public DateTime ThoiGianGianCach { get; set; }
+        public string ThoiGianBatDau { get; set; }
+        public string ThoiGianKetThuc { get; set; }
+        public string ThoiGianGianCach { get; set; }
         public string LoTrinhLuotDi { get; set; }
         public string LoTrinhLuotVe { get; set; }
         public string LoaiTuyen { get; set; }
+
+        // 2 giá trị này nhận hiển thị vị trí lên gg map
+        public string KinhDo { get; set; }
+        public string ViDo { get; set; }
     }
 }

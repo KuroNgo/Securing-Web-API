@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
+using QuanLiTuyenXeBusDalat.Services;
 using System.Text;
-
+using Microsoft.AspNetCore.Mvc;
 namespace QuanLiTuyenXeBusDalat
 {
     public class Startup
@@ -22,11 +24,29 @@ namespace QuanLiTuyenXeBusDalat
         {
             // Define dependence
             services.AddControllers();
+
+            #region  Khởi tạo versioning
+            //// Khởi tạo versioning
+            //services.AddApiVersioning(x =>
+            //{
+            //    //DefaultApiVersion được sử dụng để đặt phiên bản mặc định thành API
+            //    x.DefaultApiVersion = new ApiVersion(1, 0);
+            //    //được sử dụng để đặt phiên bản mặc định khi khách hàng chưa chỉ định bất kỳ phiên bản nào.
+            //    //Nếu chưa đặt cờ này thành true và ứng dụng khách truy cập API mà không đề cập đến phiên bản thì sẽ xảy ra ngoại lệ UnsupportedApiVersion
+            //    x.AssumeDefaultVersionWhenUnspecified = true;
+            //    //Để trả về phiên bản API trong tiêu đề phản hồi.
+            //    x.ReportApiVersions = true;
+            //    x.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
+             
+            //});
+            #endregion
+
             services.AddDbContext<MyDBContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB"));
             });
-
+            services.AddScoped<IDonViQuanLiXe, DonViQuanLiXeRepositoryInMemory>();    
+            services.AddScoped<ITuyenRepository, TuyenRepositoryInMemory>();
             #region CORS
             // TODO: CORS
             // Bật cors

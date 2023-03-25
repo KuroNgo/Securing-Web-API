@@ -7,7 +7,10 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class XeController : ControllerBase
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
+    public class XeV1Controller : ControllerBase
     {
         public static List<Xe> xes = new List<Xe>();
         [HttpGet]
@@ -17,7 +20,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 var dsXe = xes.ToList();
-                return Ok(dsXe);
+                return Ok(dsXe + "Danh sách xe từ version 1 controller");
             }
             catch
             {
