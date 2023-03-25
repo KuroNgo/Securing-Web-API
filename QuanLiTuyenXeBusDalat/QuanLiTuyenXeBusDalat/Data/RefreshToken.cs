@@ -16,7 +16,7 @@ namespace QuanLiTuyenXeBusDalat.Data
 
         // Nội dung của token
         public string Token { get; set; }
-
+        
         // Refresh token
         public string JwtId { get; set; }
         // Sài hay chưa

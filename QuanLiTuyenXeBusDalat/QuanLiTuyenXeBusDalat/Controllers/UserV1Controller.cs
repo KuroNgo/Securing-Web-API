@@ -16,13 +16,16 @@ namespace QuanLiTuyenXeBusDalat.Controllers
     // Đã xong
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
+    public class UserV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
         private readonly AppSettings _appSettings;
         public static List<TaiKhoan> taiKhoans = new List<TaiKhoan>();
 
-        public UserController(MyDBContext myDBContext, IOptionsMonitor<AppSettings> optionsMonitor)
+        public UserV1Controller(MyDBContext myDBContext, IOptionsMonitor<AppSettings> optionsMonitor)
         {
             _context = myDBContext;
             _appSettings = optionsMonitor.CurrentValue;
@@ -58,11 +61,13 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             var setcretKeyByte = Encoding.UTF8.GetBytes(_appSettings.SecretKey);
             var tokenDescription = new SecurityTokenDescriptor
             {
-                Subject = new System.Security.Claims.ClaimsIdentity(new[]
+                Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name,taiKhoan.HoTen),
+                    new Claim(ClaimTypes.Name, taiKhoan.HoTen),
                     new Claim(JwtRegisteredClaimNames.Email, taiKhoan.Email),
                     new Claim(JwtRegisteredClaimNames.Sub, taiKhoan.Email),
+                    new Claim("SDT", taiKhoan.SDT),
+                    new Claim(JwtRegisteredClaimNames.Sub,taiKhoan.SDT),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim("UserName", taiKhoan.UserName),
                     new Claim("Id", taiKhoan.MaTaiKhoan.ToString()),
@@ -70,7 +75,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 }),
 
                 //Thực hiện việc refresh token sau 1 phút
-                Expires = DateTime.UtcNow.AddMinutes(1),//TIme out
+                Expires = DateTime.UtcNow.AddMinutes(5),//TIme out
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(setcretKeyByte), SecurityAlgorithms.HmacSha512Signature)
             };
             var token = jwtTokenHandler.CreateToken(tokenDescription);
@@ -94,7 +99,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             return new TokenModel
             {
                 AccessToken = accessToken,
-                RefreshToken = GenerateRefreshToken()
+                RefreshToken = refreshToken
             };
         }
         private string GenerateRefreshToken()
@@ -120,7 +125,8 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
                 // Ký vào token
                 ValidateIssuerSigningKey = true,
-                // Sử dụng thuật toán đối xứng ứng với cái Key, sẽ tự động mã hóa, về mặt mã hóa thì phải làm được trên bit thì phải encode lại
+                // Sử dụng thuật toán đối xứng ứng với cái Key, sẽ tự động mã hóa,
+                // về mặt mã hóa thì phải làm được trên bit thì phải encode lại
                 IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
 
                 ClockSkew = TimeSpan.Zero,
@@ -131,13 +137,16 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 // Check1: coi format accesstoken có ổn không 
-                var tokenInveritification = jwtTokenHandler.ValidateToken(tokenModel.AccessToken, tokenValidateParameter, out var validatedToken);
+                var tokenInveritification = jwtTokenHandler.ValidateToken(tokenModel.AccessToken, 
+                    tokenValidateParameter, out var validatedToken);
 
                 // check2 : khác nhau về thuật toán
                 if (validatedToken is JwtSecurityToken securityToken)
                 {
                     //InvarianCultureIgnoreCase không phân biệt hoa thường
-                    var result = securityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase);
+                    var result = securityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512,
+                        StringComparison.InvariantCultureIgnoreCase);
+
                     if (!result)//false
                     {
                         return Ok(new ApiResponse
@@ -147,9 +156,13 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                         });
                     }
                 }
+
                 // check 3: access Token đã expire hay chưa
-                var utcExpireDate = long.Parse(tokenInveritification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+                var utcExpireDate = long.Parse(tokenInveritification.Claims.FirstOrDefault(
+                    x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+
                 var expireDate = ConvertUnixTimeToDateTime(utcExpireDate);
+
                 if (expireDate > DateTime.UtcNow)
                 {
                     return Ok(new ApiResponse
@@ -158,6 +171,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                         Message = "Access token has not yet expire"
                     });
                 }
+
                 //checked 4: Check refreshToken exist in DB
                 var storedToken = _context.RefreshTokens.FirstOrDefault(x => x.Token == tokenModel.RefreshToken);
                 if (storedToken == null)
@@ -207,6 +221,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
                 // create new token
                 var user = await _context.taiKhoans.SingleOrDefaultAsync(nd => nd.MaTaiKhoan == storedToken.UserId);
+
                 // Cap token
                 var token = await GenerateToken(user);
                 return Ok(new ApiResponse
@@ -228,39 +243,14 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 });
             }
         }
-
-        private DateTime ConvertUnixTimeToDateTime(long utxExpireDate)
+       
+        private DateTime ConvertUnixTimeToDateTime(long utcExpireDate)
         {
-            var dateTimeInterval = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            dateTimeInterval.AddSeconds(utxExpireDate).ToUniversalTime();
+            var dateTimeInterval = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTimeInterval.AddSeconds(utcExpireDate).ToUniversalTime();
+
             return dateTimeInterval;
         }
 
-        [HttpDelete("{id}")]
-        [Authorize]
-        public IActionResult delete(int id)
-        {
-            try
-            {
-                var user = taiKhoans.SingleOrDefault(user => user.MaTaiKhoan == id);
-                if (user == null)
-                {
-                    return Ok(new ApiResponse
-                    {
-                        Success = false,
-                        Message = "Không tìm thấy tên toàn khoản là " + user + " trong danh sách"
-                    });
-                }
-                return Ok(new ApiResponse
-                {
-                    Success=true,
-                    Message = "Đã xóa thành công tài khoản" + user
-                });
-            }
-            catch
-            {
-                return BadRequest();
-            }
-        }
     }
 }

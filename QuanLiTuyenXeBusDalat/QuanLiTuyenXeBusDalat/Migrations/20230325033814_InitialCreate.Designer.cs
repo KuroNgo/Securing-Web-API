@@ -12,8 +12,8 @@ using QuanLiTuyenXeBusDalat.Data;
 namespace QuanLiTuyenXeBusDalat.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20230313085951_AddRefreshToken")]
-    partial class AddRefreshToken
+    [Migration("20230325033814_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -190,6 +190,10 @@ namespace QuanLiTuyenXeBusDalat.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTuyen"));
 
+                    b.Property<string>("KinhDo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LoTrinhLuotDi")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -209,14 +213,21 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ThoiGianBatDau")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ThoiGianBatDau")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ThoiGianGianCach")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ThoiGianGianCach")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ThoiGianKetThuc")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ThoiGianKetThuc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ViDo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaTuyen");
 

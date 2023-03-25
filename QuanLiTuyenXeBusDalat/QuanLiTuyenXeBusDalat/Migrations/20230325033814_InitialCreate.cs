@@ -53,12 +53,14 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     MaDonVi = table.Column<int>(type: "int", nullable: false),
                     TenTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ThoiGianBatDau = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ThoiGianKetThuc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ThoiGianGianCach = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ThoiGianBatDau = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ThoiGianKetThuc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ThoiGianGianCach = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotDi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotVe = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    KinhDo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ViDo = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,6 +70,30 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         column: x => x.MaDonVi,
                         principalTable: "DonViQLXe",
                         principalColumn: "MaDonVi",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshToken",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JwtId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    IsSuedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpireAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshToken", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_TaiKhoan_UserId",
+                        column: x => x.UserId,
+                        principalTable: "TaiKhoan",
+                        principalColumn: "MaTaiKhoan",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -123,6 +149,11 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshToken_UserId",
+                table: "RefreshToken",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TaiKhoan_MaTaiKhoan",
                 table: "TaiKhoan",
                 column: "MaTaiKhoan",
@@ -148,10 +179,13 @@ namespace QuanLiTuyenXeBusDalat.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "TaiKhoan");
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "TaiXe");
+
+            migrationBuilder.DropTable(
+                name: "TaiKhoan");
 
             migrationBuilder.DropTable(
                 name: "Xe");
