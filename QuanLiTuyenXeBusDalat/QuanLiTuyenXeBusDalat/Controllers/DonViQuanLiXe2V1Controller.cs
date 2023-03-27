@@ -7,10 +7,9 @@ using QuanLiTuyenXeBusDalat.Models;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // Thông tin của bảng này được lấy từ database
-    //[Route("api/{v:ApiVersion}/[controller]")]
-    [Route("api/[controller]")]
+    [Route("api/{v:ApiVersion}/[controller]")]
     [ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
     public class DonViQuanLiXe2V1Controller : ControllerBase
     {
         private readonly MyDBContext _context;

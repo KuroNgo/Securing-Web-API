@@ -6,11 +6,10 @@ using QuanLiTuyenXeBusDalat.Services;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // Thông tin của bảng này được lấy từ bộ nhớ (In memory)
-    [Route("api/[controller]")]
+ 
+    [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
     public class TuyenV1Controller : ControllerBase
     {
         private readonly ITuyenRepository _tuyenRepository;

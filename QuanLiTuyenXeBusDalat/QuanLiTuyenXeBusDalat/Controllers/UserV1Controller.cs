@@ -14,11 +14,10 @@ using System.Text;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // Đã xong
-    [Route("api/[controller]")]
+    
+    [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
     public class UserV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -111,6 +110,11 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 return Convert.ToBase64String(random);
             }
         }
+
+
+        //     Refresh token được cấp cho User cùng với token khi user xác thực đầu tiên nhưng thời gian của chúng khác nhau
+        //     Refresh Token chỉ có một nhiệm vụ duy nhất đó là đề lấy một token mới, nêú token được cấp phát cho user hết hạn
+        //     Refresh token thực chất nó cũng chính là một token
 
         [HttpPost("RenewToken")]
         public async Task<IActionResult> RenewToken(TokenModel tokenModel)
