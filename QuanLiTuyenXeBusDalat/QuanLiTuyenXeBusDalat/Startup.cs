@@ -8,10 +8,20 @@ using QuanLiTuyenXeBusDalat.Models;
 using QuanLiTuyenXeBusDalat.Services;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+// 2 thư viện này phục vụ cho chức năng Rate Limit
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using AutoWrapper;
+using Serilog;
+using System.Reflection.PortableExecutable;
+using QuanLiTuyenXeBusDalat.Extension;
+using AspNetCoreRateLimit;
+
 namespace QuanLiTuyenXeBusDalat
 {
     public class Startup
     {
+
         // Khởi tạo hàm constructor
         public Startup(IConfiguration configuration)
         {
@@ -22,31 +32,13 @@ namespace QuanLiTuyenXeBusDalat
 
         public void ConfigureServices(IServiceCollection services)
         {
+           services.AddOptions();
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+            services.AddInMemoryRateLimiting();
             // Define dependence
             services.AddControllers();
-
-            #region  Khởi tạo versioning
-            //// Khởi tạo versioning
-            //services.AddApiVersioning(x =>
-            //{
-            //    //DefaultApiVersion được sử dụng để đặt phiên bản mặc định thành API
-            //    x.DefaultApiVersion = new ApiVersion(1, 0);
-            //    //được sử dụng để đặt phiên bản mặc định khi khách hàng chưa chỉ định bất kỳ phiên bản nào.
-            //    //Nếu chưa đặt cờ này thành true và ứng dụng khách truy cập API mà không đề cập đến phiên bản thì sẽ xảy ra ngoại lệ UnsupportedApiVersion
-            //    x.AssumeDefaultVersionWhenUnspecified = true;
-            //    //Để trả về phiên bản API trong tiêu đề phản hồi.
-            //    x.ReportApiVersions = true;
-            //    x.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
-             
-            //});
-            #endregion
-
-            services.AddDbContext<MyDBContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("MyDB"));
-            });
-            services.AddScoped<IDonViQuanLiXe, DonViQuanLiXeRepositoryInMemory>();    
-            services.AddScoped<ITuyenRepository, TuyenRepositoryInMemory>();
             #region CORS
             // TODO: CORS
             // Bật cors
@@ -59,6 +51,39 @@ namespace QuanLiTuyenXeBusDalat
             }));
 
             #endregion
+            #region  Khởi tạo versioning
+            // Khởi tạo versioning
+            services.AddApiVersioning(x =>
+            {
+                //DefaultApiVersion được sử dụng để đặt phiên bản mặc định thành API
+                x.DefaultApiVersion = new ApiVersion(1, 0);
+                //được sử dụng để đặt phiên bản mặc định khi khách hàng chưa chỉ định bất kỳ phiên bản nào.
+                //Nếu chưa đặt cờ này thành true và ứng dụng khách truy cập API mà không đề cập đến phiên bản thì sẽ xảy ra ngoại lệ UnsupportedApiVersion
+                x.AssumeDefaultVersionWhenUnspecified = true;
+                //Để trả về phiên bản API trong tiêu đề phản hồi.
+                x.ReportApiVersions = true;
+                //Khi user sử dụng API, họ phải gửi phiên bản x-api vào tiêu đề với giá trị phiên bản cụ thể để gọi đúng bộ điều khiển.
+                x.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
+
+            });
+            #endregion
+            #region Rate Limit
+            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+
+            //services.AddRateLimiter(_ => _.AddFixedWindowLimiter(policyName: "fixed", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(12);
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //    options.QueueLimit = 2;
+            //}));
+            #endregion
+            services.AddDbContext<MyDBContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("MyDB"));
+            });
+            services.AddScoped<IDonViQuanLiXe, DonViQuanLiXeRepositoryInMemory>();    
+            services.AddScoped<ITuyenRepository, TuyenRepositoryInMemory>();
 
             //services.AddScoped<ICategoryRepository, LoaiRepository>();
             //services.AddScoped<ICategoryRepository, CategoryRepositoryInMemory>();
@@ -92,9 +117,15 @@ namespace QuanLiTuyenXeBusDalat
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QuanLiTuyenXeBusDaLat", Version = "v1" });
             });
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+        }
+        internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+        {
+            public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseIpRateLimiting();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -105,10 +136,14 @@ namespace QuanLiTuyenXeBusDalat
             #region CORS
             app.UseCors("MyCors");
             #endregion
-
+          
             app.UseHttpsRedirection();
 
-
+           
+            #region Rate Limit
+            //app.UseRateLimiter();
+            
+            #endregion
             app.UseRouting();
 
             // Authentication phải đặt trước Authorization

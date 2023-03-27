@@ -1,26 +1,37 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    [Route("api/[controller]")]
+    
+    [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
 
     public class TaiXesV1Controller : ControllerBase
     {
-        public static List<TaiXe> taiXes = new List<TaiXe>();
-
+        private readonly MyDBContext _context;
+        public TaiXesV1Controller(MyDBContext context)
+        {
+            _context = context;
+        }
 
         [HttpGet]
         //Interface dùng để trả về cho các action
         public IActionResult GetAll()
         {
-            // Trả về danh sách các tài xế
-            return Ok(taiXes);
+            // Trả về danh sách các hàng hóa
+            try
+            {
+                var dsLoai = _context.TaiXes.ToList();
+                return Ok(dsLoai);
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
         [HttpGet("{id}")]
         public IActionResult GetByID(string id)
@@ -28,7 +39,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 //LinQ [Object] Query
-                var taiXe = taiXes.SingleOrDefault(tx => tx.MaTaiXe == Guid.Parse(id));
+                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == Guid.Parse(id));
                 if (taiXe == null)
                 {
                     return NotFound();
@@ -44,7 +55,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         [HttpPost]
         public IActionResult Create(TaiXeVM taiXeVM)
         {
-            var taiXe = new TaiXe
+            var taiXe = new Models.TaiXe
             {
                 TenTaiXe = taiXeVM.TenTaiXe,
                 GioiTinh=taiXeVM.GioiTinh,
@@ -55,7 +66,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 Luong=taiXeVM.Luong,
                 BangLai=taiXeVM.BangLai
             };
-            taiXes.Add(taiXe);
+            _context.Add(taiXe);
             return Ok(new
             {
                 Success = true,
@@ -64,16 +75,16 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(Guid id, TaiXe taiXeEdit)
+        public IActionResult Edit(Guid id, Models.TaiXe taiXeEdit)
         {
             try
             {
                 //LINQ [Object] Query
-                var taiXe = taiXes.SingleOrDefault(tx => tx.MaTaiXe == id); ;
+                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == id); ;
                 if (taiXe == null) { return NotFound(); }
-                if (id != taiXe.MaTaiXe) { return BadRequest(); }
+                if (id != taiXe.MaTX) { return BadRequest(); }
                 //Update
-                taiXe.TenTaiXe = taiXeEdit.TenTaiXe;
+                taiXe.HoVaTen = taiXeEdit.TenTaiXe;
                 taiXe.GioiTinh = taiXeEdit.GioiTinh;
                 taiXe.NgaySinh = taiXeEdit.NgaySinh;
                 taiXe.DiaChi = taiXeEdit.DiaChi;
@@ -95,9 +106,9 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 //Linq [object] Query
-                var taiXe = taiXes.SingleOrDefault(tx => tx.MaTaiXe == id);
+                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == id);
                 if (taiXe == null) { return NotFound(); }
-                taiXes.Remove(taiXe);
+                _context.Remove(taiXe);
                 return Ok();
             }
             catch

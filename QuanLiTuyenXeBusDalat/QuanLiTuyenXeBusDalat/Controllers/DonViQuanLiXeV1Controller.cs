@@ -7,11 +7,10 @@ using QuanLiTuyenXeBusDalat.Services;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // THông tin của bảng này được lấy từ bộ nhớ ( In memory )
-    [Route("api/[controller]")]
+  
+    [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
     public class DonViQuanLiXeV1Controller : ControllerBase
     {
         private readonly IDonViQuanLiXe _donViQuanLyXeRepository;
@@ -86,19 +85,19 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             }
         }
 
-        [HttpDelete("{name}")]
-        public IActionResult Delete(string name)
-        {
-            try
-            {
-                _donViQuanLyXeRepository.Remove(name);
-                return Ok();
-            }
-            catch
-            {
-                return BadRequest();
-            }
-        }
+        //[HttpDelete("{name}")]
+        //public IActionResult Delete(string name)
+        //{
+        //    try
+        //    {
+        //        _donViQuanLyXeRepository.Remove(name);
+        //        return Ok();
+        //    }
+        //    catch
+        //    {
+        //        return BadRequest();
+        //    }
+        //}
 
     }
 }

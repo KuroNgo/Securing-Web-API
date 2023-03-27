@@ -1,26 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    [Route("api/[controller]")]
+    
+    [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [ApiVersion("1.0")]
     public class XeV1Controller : ControllerBase
     {
-        public static List<Xe> xes = new List<Xe>();
+        private readonly MyDBContext _context;
+        public XeV1Controller(MyDBContext context)
+        {
+            _context = context;
+        }
         [HttpGet]
-        [Authorize]
         public IActionResult GetAll()
         {
             try
             {
-                var dsXe = xes.ToList();
-                return Ok(dsXe + "Danh sách xe từ version 1 controller");
+                var dsXe = _context.Xes.ToList();
+                return Ok(dsXe);
             }
             catch
             {
@@ -34,7 +37,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         {
             //SingleOrDefault: trả về giá trị mặc định của kiểu dữ liệu của danh sách nếu danh sách trống hoặc không tìm thấy bất kỳ phần tử nào thỏa mãn điều kiện
             //hoặc có nhiều hơn một phần tử thỏa mãn điều kiện.
-            var dsXe = xes.SingleOrDefault(xe => xe.MaXe == id);
+            var dsXe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
             if (dsXe != null)
             {
                 return Ok(dsXe);
@@ -53,7 +56,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         public IActionResult CreateNew(XeModel xeModel)
         {
 
-            var xe = new Xe
+            var xe = new Models.Xe
             {
                 // Vì MaXe mình dang đặt cho nó là idnetity nên nó sẽ tự động tăng
                 // Không cần khai báo vào trong này
@@ -64,7 +67,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 NgaySX = xeModel.NgaySX,
                 ChuKyBaoHanh = xeModel.ChuKyBaoHanh
             };
-            xes.Add(xe);
+            _context.Add(xe);
             return Ok(new
             {
                 Success = true,
@@ -75,11 +78,11 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        public IActionResult EditXe(int id, Xe xeEdit)
+        public IActionResult EditXe(int id, Models.Xe xeEdit)
         {
             try
             {
-                var xe = xes.SingleOrDefault(xe => xe.MaXe == id);
+                var xe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
                 if(xe == null)
                 {
                     return NotFound();
@@ -109,12 +112,12 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         {
             try
             {
-                var xe = xes.SingleOrDefault(xe => xe.MaXe == id);
+                var xe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
                 if(xe == null)
                 {
                     return NotFound();
                 }
-                xes.Remove(xe);
+                _context.Remove(xe);
                 return Ok();
             }
             catch 
