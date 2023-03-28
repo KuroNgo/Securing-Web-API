@@ -73,7 +73,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
                 }),
 
-                //Thực hiện việc refresh token sau 1 phút
+                //Thực hiện việc refresh token sau 5 phút
                 Expires = DateTime.UtcNow.AddMinutes(5),//TIme out
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(setcretKeyByte), SecurityAlgorithms.HmacSha512Signature)
             };
