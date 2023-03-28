@@ -8,21 +8,21 @@ using QuanLiTuyenXeBusDalat.Models;
 using QuanLiTuyenXeBusDalat.Services;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
-// 2 thư viện này phục vụ cho chức năng Rate Limit
+// 4 thư viện này phục vụ cho chức năng Rate Limit
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using AspNetCoreRateLimit;
+using QuanLiTuyenXeBusDalat.RateLimiting;
+// 3 thư viện này cho mục đích test nhưng mà chưa sử dụng :(((
 using AutoWrapper;
 using Serilog;
 using System.Reflection.PortableExecutable;
-using QuanLiTuyenXeBusDalat.Extension;
-using AspNetCoreRateLimit;
+//using QuanLiTuyenXeBusDalat.Extension;
 
 namespace QuanLiTuyenXeBusDalat
 {
     public class Startup
     {
-
-        // Khởi tạo hàm constructor
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -32,12 +32,7 @@ namespace QuanLiTuyenXeBusDalat
 
         public void ConfigureServices(IServiceCollection services)
         {
-           services.AddOptions();
-            services.AddMemoryCache();
-            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
-            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
-            services.AddInMemoryRateLimiting();
-            // Define dependence
+         
             services.AddControllers();
             #region CORS
             // TODO: CORS
@@ -45,8 +40,8 @@ namespace QuanLiTuyenXeBusDalat
             services.AddCors(options => options.AddPolicy("MyCors", build =>
             {
                 // Chỉ cho phép một vài trang web kết nối đến API
-                build.WithOrigins("https://hienlth.info", "https://localhost:3000");
-                // Cho phép mọi trang web kết nối đến API
+                //build.WithOrigins("https://hienlth.info", "https://localhost:3000");
+                // Cho phép mọi trang web kết nối đến API, sử dụng phương thức cho phép chấp nhận mọi phương thức và mọi header khi sử dụng api
                 build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
             }));
 
@@ -68,8 +63,13 @@ namespace QuanLiTuyenXeBusDalat
             });
             #endregion
             #region Rate Limit
-            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
-
+            services.AddOptions();
+            services.AddMemoryCache();
+            //services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            //services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+            services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
+            services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
+            services.AddInMemoryRateLimiting();
             //services.AddRateLimiter(_ => _.AddFixedWindowLimiter(policyName: "fixed", options =>
             //{
             //    options.PermitLimit = 2;
@@ -82,6 +82,8 @@ namespace QuanLiTuyenXeBusDalat
             {
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB"));
             });
+
+            #region JWT Token
             services.AddScoped<IDonViQuanLiXe, DonViQuanLiXeRepositoryInMemory>();    
             services.AddScoped<ITuyenRepository, TuyenRepositoryInMemory>();
 
@@ -113,19 +115,22 @@ namespace QuanLiTuyenXeBusDalat
                     ClockSkew = TimeSpan.Zero
                 };
             });
+            #endregion
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QuanLiTuyenXeBusDaLat", Version = "v1" });
             });
-            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+            #region Rate Limit
+            //services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
+            #endregion
+
         }
-        internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-        {
-            public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-        }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseIpRateLimiting();
+           
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -139,10 +144,10 @@ namespace QuanLiTuyenXeBusDalat
           
             app.UseHttpsRedirection();
 
-           
+
             #region Rate Limit
-            //app.UseRateLimiter();
-            
+            //app.UseIpRateLimiting();
+            app.UseClientRateLimiting();
             #endregion
             app.UseRouting();
 
