@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace QuanLiTuyenXeBusDalat.Data
 {
     public class MyDBContext : DbContext
     {
-        public MyDBContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
-        {
-
-        }
+      
         #region DbSet
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<TaiXe> TaiXes { get; set; }
@@ -16,6 +12,11 @@ namespace QuanLiTuyenXeBusDalat.Data
         public DbSet<TaiKhoan> taiKhoans { get; set; }
         public DbSet<Tuyen> tuyens { get; set; }
         public DbSet<DonViQuanLiXe> donViQuanLiXes { get; set; }
+
+        public MyDBContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
+        {
+
+        }
 
         // định nghĩa Fluent API
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,7 +50,7 @@ namespace QuanLiTuyenXeBusDalat.Data
                 // Khai báo khóa chính
                 e.HasKey(e => e.MaXe);
                 e.Property(e => e.BienSo).IsRequired().HasMaxLength(150);
-                e.Property(e=>e.ChuKyBaoHanh).IsRequired().HasMaxLength(150);
+                e.Property(e => e.ChuKyBaoHanh).IsRequired().HasMaxLength(150);
                 e.Property(e => e.NgaySX).IsRequired().HasMaxLength(150);
             });
 

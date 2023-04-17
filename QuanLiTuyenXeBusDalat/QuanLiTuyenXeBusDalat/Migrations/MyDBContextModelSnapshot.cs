@@ -17,7 +17,7 @@ namespace QuanLiTuyenXeBusDalat.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.3")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -187,10 +187,6 @@ namespace QuanLiTuyenXeBusDalat.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTuyen"));
 
-                    b.Property<string>("KinhDo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("LoTrinhLuotDi")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -219,10 +215,6 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ThoiGianKetThuc")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ViDo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

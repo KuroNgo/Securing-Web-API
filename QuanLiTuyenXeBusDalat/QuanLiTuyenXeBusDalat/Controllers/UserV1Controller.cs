@@ -14,10 +14,12 @@ using System.Text;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // Đã xong
-    
-    [Route("api/{v:apiVersion}/[controller]")]
+
+    [Route("api/[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
     public class UserV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;

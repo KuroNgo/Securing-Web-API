@@ -55,9 +55,9 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         [HttpPost]
         public IActionResult Create(TaiXeVM taiXeVM)
         {
-            var taiXe = new Models.TaiXe
+            var taiXe = new Data.TaiXe
             {
-                TenTaiXe = taiXeVM.TenTaiXe,
+                HoVaTen = taiXeVM.TenTaiXe,
                 GioiTinh=taiXeVM.GioiTinh,
                 NgaySinh=taiXeVM.NgaySinh,
                 DiaChi=taiXeVM.DiaChi,
@@ -67,6 +67,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 BangLai=taiXeVM.BangLai
             };
             _context.Add(taiXe);
+            _context.SaveChanges();
             return Ok(new
             {
                 Success = true,

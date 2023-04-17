@@ -6,10 +6,11 @@ using QuanLiTuyenXeBusDalat.Models;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    
-    [Route("api/{v:apiVersion}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
     public class XeV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -18,6 +19,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             _context = context;
         }
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             try
@@ -50,24 +52,25 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
         // Thêm 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         //Phải cấu hình mới thực hiện thực được lệnh authorize
         // Phải đăng nhập mới được làm
-        public IActionResult CreateNew(XeModel xeModel)
+        public IActionResult CreateNew(XeVM XeModel)
         {
 
             var xe = new Models.Xe
             {
-                // Vì MaXe mình dang đặt cho nó là idnetity nên nó sẽ tự động tăng
+                // Vì MaXe mình dang đặt cho nó là identity nên nó sẽ tự động tăng
                 // Không cần khai báo vào trong này
-                BienSo = xeModel.BienSo,
-                LoaiXe = xeModel.LoaiXe,
-                SoGhe = xeModel.SoGhe,
-                CongSuat = xeModel.CongSuat,
-                NgaySX = xeModel.NgaySX,
-                ChuKyBaoHanh = xeModel.ChuKyBaoHanh
+                BienSo = XeModel.BienSo,
+                LoaiXe = XeModel.LoaiXe,
+                SoGhe = XeModel.SoGhe,
+                CongSuat = XeModel.CongSuat,
+                NgaySX = XeModel.NgaySX,
+                ChuKyBaoHanh = XeModel.ChuKyBaoHanh
             };
             _context.Add(xe);
+            _context.SaveChanges();
             return Ok(new
             {
                 Success = true,
@@ -118,6 +121,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                     return NotFound();
                 }
                 _context.Remove(xe);
+                _context.SaveChanges();
                 return Ok();
             }
             catch 

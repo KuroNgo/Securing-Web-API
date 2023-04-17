@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
@@ -10,6 +13,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
     [Route("api/{v:apiVersion}/[controller]")]
     [ApiController]
     [ApiVersion("1.0")]
+    //[DisableCors]
     public class Tuyen2V1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -20,6 +24,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         //Interface dùng để trả về cho các action
         public IActionResult GetAll()
         {
@@ -34,6 +39,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 return BadRequest();
             }
         }
+
         [HttpGet("{id}")]
         public IActionResult GetByID(int id)
         {
@@ -48,21 +54,30 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 return NotFound();
             }
         }
+
         //Insert
         [HttpPost]
-        public IActionResult Create(TuyenVM tuyenVM)
+        public IActionResult Create([FromBody] TuyenVM tuyenVM)
         {
-            var tuyen = new Models.Tuyen
+            var MaDonVi = _context.donViQuanLiXes.FirstOrDefault(dvql => dvql.MaDonVi == tuyenVM.MaDonVi);
+            
+            if (MaDonVi == null)
             {
+                return NotFound("DonViQuanLiXe not found");
+            }
+
+            var tuyen = new Data.Tuyen
+            {
+                MaTuyen=0,
                 TenTuyen = tuyenVM.TenTuyen,
                 ThoiGianBatDau = tuyenVM.ThoiGianBatDau,
                 ThoiGianKetThuc = tuyenVM.ThoiGianKetThuc,
                 ThoiGianGianCach = tuyenVM.ThoiGianGianCach,
                 LoTrinhLuotDi = tuyenVM.LoTrinhLuotDi,
                 LoTrinhLuotVe = tuyenVM.LoTrinhLuotVe,
-                LoaiTuyen = tuyenVM.LoaiTuyen
+                LoaiTuyen = tuyenVM.LoaiTuyen,
             };
-            _context.Add(tuyen);
+            _context.tuyens.Add(tuyen);
             _context.SaveChanges();
             return Ok(new
             {
@@ -88,6 +103,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 tuyen.LoTrinhLuotDi = tuyenEdit.LoTrinhLuotDi;
                 tuyen.LoTrinhLuotVe = tuyenEdit.LoTrinhLuotVe;
                 tuyen.LoaiTuyen = tuyenEdit.LoaiTuyen;
+                tuyen.MaDonVi = tuyenEdit.MaDonVi;
                 return Ok();
             }
             catch

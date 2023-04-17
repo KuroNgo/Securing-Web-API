@@ -58,9 +58,7 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                     ThoiGianGianCach = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotDi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotVe = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KinhDo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ViDo = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
