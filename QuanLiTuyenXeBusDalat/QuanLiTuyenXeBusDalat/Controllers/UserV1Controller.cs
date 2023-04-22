@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -13,27 +14,32 @@ using System.Text;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    // Đã xong
-    
-    [Route("api/{v:apiVersion}/[controller]")]
+
+    [Route("api/[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    //[EnableRateLimiting("Api")]
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
     public class UserV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
         private readonly AppSettings _appSettings;
         public static List<TaiKhoan> taiKhoans = new List<TaiKhoan>();
 
+       
         public UserV1Controller(MyDBContext myDBContext, IOptionsMonitor<AppSettings> optionsMonitor)
         {
             _context = myDBContext;
             _appSettings = optionsMonitor.CurrentValue;
         }
 
+ 
         [HttpPost("Login")]
         public async Task<IActionResult> validate(LoginModel loginModel)
         {
-            var user = _context.taiKhoans.SingleOrDefault(p => p.UserName==loginModel.UserName && loginModel.Password==p.Password);
+            var user = _context.taiKhoans.SingleOrDefault(p => p.UserName==loginModel.UserName && 
+            loginModel.Password==p.Password);
 
             if (user == null)// Không đúng
             {
@@ -75,7 +81,8 @@ namespace QuanLiTuyenXeBusDalat.Controllers
 
                 //Thực hiện việc refresh token sau 5 phút
                 Expires = DateTime.UtcNow.AddMinutes(5),//TIme out
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(setcretKeyByte), SecurityAlgorithms.HmacSha512Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(setcretKeyByte),
+                SecurityAlgorithms.HmacSha512Signature)
             };
             var token = jwtTokenHandler.CreateToken(tokenDescription);
             var accessToken = jwtTokenHandler.WriteToken(token);
@@ -112,8 +119,10 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
 
-        //     Refresh token được cấp cho User cùng với token khi user xác thực đầu tiên nhưng thời gian của chúng khác nhau
-        //     Refresh Token chỉ có một nhiệm vụ duy nhất đó là đề lấy một token mới, nêú token được cấp phát cho user hết hạn
+        //     Refresh token được cấp cho User cùng với token khi user xác thực đầu
+        //     tiên nhưng thời gian của chúng khác nhau
+        //     Refresh Token chỉ có một nhiệm vụ duy nhất đó là đề lấy một token mới,
+        //     nêú token được cấp phát cho user hết hạn
         //     Refresh token thực chất nó cũng chính là một token
 
         [HttpPost("RenewToken")]

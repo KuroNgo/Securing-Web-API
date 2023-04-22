@@ -1,15 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    
-    [Route("api/{v:apiVersion}/[controller]")]
-    [ApiController]
-    [ApiVersion("1.0")]
 
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
+    [Route("api/[controller]")]
+    [ApiController]
+    [EnableRateLimiting("Api")]
     public class TaiXesV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -19,54 +25,65 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpGet]
-        //Interface dùng để trả về cho các action
+
         public IActionResult GetAll()
         {
-            // Trả về danh sách các hàng hóa
             try
             {
-                var dsLoai = _context.TaiXes.ToList();
-                return Ok(dsLoai);
+                var taixe=_context.TaiXes.Include(t=>t.Xe).ToList();
+                return Ok(taixe);
+
             }
-            catch
+            catch (Exception)
             {
                 return BadRequest();
             }
         }
         [HttpGet("{id}")]
-        public IActionResult GetByID(string id)
+        public IActionResult GetByID(int id)
         {
-            try
+            var query = from tx in _context.TaiXes
+                        join x in _context.Xes on tx.MaXe
+                        equals x.MaXe
+                        where tx.MaXe == id
+                        select new { tx.MaXe, tx.MaTX, tx.HoVaTen, 
+                            tx.GioiTinh, tx.DiaChi, tx.BangLai };
+            var result = query.FirstOrDefault();
+            if(result == null)
             {
-                //LinQ [Object] Query
-                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == Guid.Parse(id));
-                if (taiXe == null)
-                {
-                    return NotFound();
-                }
-                return Ok(taiXe);
+                return NotFound();
             }
-            catch
+            return Ok(new ApiResponse
             {
-                return BadRequest();
-            }
+                Success = true,
+                Data = result
+            });
         }
         //Insert
         [HttpPost]
-        public IActionResult Create(TaiXeVM taiXeVM)
+        public IActionResult Create([FromBody] TaiXeVM taiXeVM)
         {
-            var taiXe = new Models.TaiXe
+            var xe = _context.Xes.FirstOrDefault(x => x.MaXe == 
+            taiXeVM.MaXe);
+            if (xe == null)
             {
-                TenTaiXe = taiXeVM.TenTaiXe,
-                GioiTinh=taiXeVM.GioiTinh,
-                NgaySinh=taiXeVM.NgaySinh,
-                DiaChi=taiXeVM.DiaChi,
-                QueQuan=taiXeVM.QueQuan,
-                NgayBDHopDong=taiXeVM.NgayBDHopDong,
-                Luong=taiXeVM.Luong,
-                BangLai=taiXeVM.BangLai
+                return NotFound("Xe Not Found");
+            }
+            var taiXe = new Data.TaiXe
+            {
+                MaTX =0,
+                MaXe = taiXeVM.MaXe,
+                HoVaTen = taiXeVM.TenTaiXe,
+                GioiTinh = taiXeVM.GioiTinh,
+                NgaySinh = taiXeVM.NgaySinh,
+                DiaChi = taiXeVM.DiaChi,
+                QueQuan = taiXeVM.QueQuan,
+                NgayBDHopDong = taiXeVM.NgayBDHopDong,
+                Luong = taiXeVM.Luong,
+                BangLai = taiXeVM.BangLai
             };
-            _context.Add(taiXe);
+            _context.TaiXes.Add(taiXe);
+            _context.SaveChanges();
             return Ok(new
             {
                 Success = true,
@@ -75,12 +92,13 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(Guid id, Models.TaiXe taiXeEdit)
+        public IActionResult Edit(int id, Models.TaiXe taiXeEdit)
         {
             try
             {
                 //LINQ [Object] Query
-                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == id); ;
+                var taiXe = _context.TaiXes.SingleOrDefault(tx => 
+                tx.MaTX == id); ;
                 if (taiXe == null) { return NotFound(); }
                 if (id != taiXe.MaTX) { return BadRequest(); }
                 //Update
@@ -91,8 +109,12 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 taiXe.QueQuan = taiXeEdit.QueQuan;
                 taiXe.NgayBDHopDong = taiXeEdit.NgayBDHopDong;
                 taiXe.Luong = taiXeEdit.Luong;
-                taiXe.BangLai=taiXeEdit.BangLai;
-                return Ok();
+                taiXe.BangLai = taiXeEdit.BangLai;
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Thay đổi thành công"
+                });
             }
             catch
             {
@@ -101,12 +123,13 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public IActionResult Delete(int id)
         {
             try
             {
                 //Linq [object] Query
-                var taiXe = _context.TaiXes.SingleOrDefault(tx => tx.MaTX == id);
+                var taiXe = _context.TaiXes.SingleOrDefault(tx => 
+                tx.MaTX == id);
                 if (taiXe == null) { return NotFound(); }
                 _context.Remove(taiXe);
                 return Ok();

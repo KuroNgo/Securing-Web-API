@@ -17,9 +17,9 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 {
                     MaDonVi = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TenDonVi = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    TenDonVi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DiaChi = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SoDienThoai = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    SoDienThoai = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -35,9 +35,9 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    HoTen = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    HoTen = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NgayThangNamSinh = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SDT = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -51,16 +51,14 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 {
                     MaTuyen = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    MaDonVi = table.Column<int>(type: "int", nullable: false),
+                    MaDonVi = table.Column<int>(type: "int", nullable: true),
                     TenTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ThoiGianBatDau = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ThoiGianKetThuc = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ThoiGianGianCach = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotDi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LoTrinhLuotVe = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KinhDo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ViDo = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LoaiTuyen = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,8 +67,7 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                         name: "FK_Tuyen_DonViQLXe_MaDonVi",
                         column: x => x.MaDonVi,
                         principalTable: "DonViQLXe",
-                        principalColumn: "MaDonVi",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "MaDonVi");
                 });
 
             migrationBuilder.CreateTable(
@@ -103,12 +100,12 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 {
                     MaXe = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BienSo = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    BienSo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LoaiXe = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SoGhe = table.Column<int>(type: "int", nullable: false),
                     CongSuat = table.Column<float>(type: "real", nullable: false),
-                    ChuKyBaoHanh = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    NgaySX = table.Column<DateTime>(type: "datetime2", maxLength: 150, nullable: false),
+                    ChuKyBaoHanh = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NgaySX = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MaTuyen = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -126,9 +123,10 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 name: "TaiXe",
                 columns: table => new
                 {
-                    MaTX = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MaTX = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     HoVaTen = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    NgaySinh = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getutcdate()"),
+                    NgaySinh = table.Column<DateTime>(type: "datetime2", nullable: false),
                     GioiTinh = table.Column<bool>(type: "bit", nullable: false),
                     DiaChi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     QueQuan = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -152,12 +150,6 @@ namespace QuanLiTuyenXeBusDalat.Migrations
                 name: "IX_RefreshToken_UserId",
                 table: "RefreshToken",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TaiKhoan_MaTaiKhoan",
-                table: "TaiKhoan",
-                column: "MaTaiKhoan",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TaiXe_MaXe",

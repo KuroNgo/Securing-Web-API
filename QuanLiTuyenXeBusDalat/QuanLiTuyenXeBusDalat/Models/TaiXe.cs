@@ -2,7 +2,7 @@
 
 namespace QuanLiTuyenXeBusDalat.Models
 {
-    // Cái chỗ này là để người dùng nhập zào
+    
     public class TaiXeVM
     {
         public string TenTaiXe { get; set; }
@@ -13,11 +13,12 @@ namespace QuanLiTuyenXeBusDalat.Models
         public DateTime NgayBDHopDong { get; set; }
         public double Luong { get; set; }
         public string BangLai { get; set; }
+        public int MaXe { get; set; }
     }
 
-    // Cái chỗ này khi mà người dùng thêm thành công thì cái mã sẽ tự tăng +1
+   
     public class TaiXe : TaiXeVM
     {
-        public Guid MaTaiXe { get; set; }
+        public int MaTaiXe { get; set; }
     }
 }

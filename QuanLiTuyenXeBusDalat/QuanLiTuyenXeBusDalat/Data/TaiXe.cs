@@ -8,7 +8,7 @@ namespace QuanLiTuyenXeBusDalat.Data
     public class TaiXe
     {
         [Key] //Chỉ định Mã Tài xế là khóa chính
-        public Guid MaTX { get; set; }
+        public int MaTX { get; set; }
 
         [Required] // Bắt buộc phải nhập = not null
         [MaxLength(100)] // Ràng buộc số ký tự nhập vào
