@@ -4,7 +4,8 @@ namespace QuanLiTuyenXeBusDalat.Models
 {
     public class XeVM
     {
-        public char BienSo { get; set; }
+        public int MaTuyen { get; set; }
+        public string BienSo { get; set; }
 
         public string LoaiXe { get; set; }
 
@@ -23,7 +24,7 @@ namespace QuanLiTuyenXeBusDalat.Models
     }
     public class XeModel
     {
-        public char BienSo { get; set; }
+        public string BienSo { get; set; }
         public string LoaiXe { get; set; }
 
         public int SoGhe { get; set; }

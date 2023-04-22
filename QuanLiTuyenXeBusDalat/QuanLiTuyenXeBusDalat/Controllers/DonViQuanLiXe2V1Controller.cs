@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
@@ -7,9 +9,11 @@ using QuanLiTuyenXeBusDalat.Models;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // Thông tin của bảng này được lấy từ database
-    [Route("api/{v:ApiVersion}/[controller]")]
+
+    [Route("api/[controller]")]
     [ApiController]
     [ApiVersion("1.0")]
+    [DisableRateLimiting]
     public class DonViQuanLiXe2V1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -23,16 +27,19 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         //Interface dùng để trả về cho các action
         public IActionResult GetAll()
         {
-            // Trả về danh sách các hàng hóa
-            try
-            {
-                var dsLoai = _context.donViQuanLiXes.ToList();
-                return Ok(dsLoai);
-            }
-            catch
-            {
-                return BadRequest();
-            }
+            var dsLoai = _context.donViQuanLiXes.ToList();
+            return Ok(dsLoai);
+
+            //// Trả về danh sách các hàng hóa
+            //try
+            //{
+            //    var dsLoai = _context.donViQuanLiXes.ToList();
+            //    return Ok(dsLoai);
+            //}
+            //catch
+            //{
+            //    return BadRequest();
+            //}
         }
         [HttpGet("{id}")]
         public IActionResult GetByID(int id)
@@ -58,6 +65,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
         //Insert
         [HttpPost]
+        [Authorize]
         public IActionResult Create(DonViQuanLiXeVM donViQuanLiXeVM)
         {
              try
@@ -82,12 +90,14 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Edit(int id, DonViQuanLiXeModel donViQuanLiXeEdit)
         {
             try
             {
                 //LINQ [Object] Query
-                var donViQuanLiXe = _context.donViQuanLiXes.SingleOrDefault(donViQuanLiXe => donViQuanLiXe.MaDonVi == id);
+                var donViQuanLiXe = _context.donViQuanLiXes.SingleOrDefault(donViQuanLiXe
+                    => donViQuanLiXe.MaDonVi == id);
                 if (donViQuanLiXe != null)
                 {
                     donViQuanLiXe.TenDonVi = donViQuanLiXeEdit.TenDonVi;
@@ -115,6 +125,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             try

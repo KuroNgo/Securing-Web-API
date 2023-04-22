@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLiTuyenXeBusDalat.Data
 {
-    [Table("DonViQuanLiXe")]
+    [Table("DonViQLXe")]
     public class DonViQuanLiXe
     {
         [Key]

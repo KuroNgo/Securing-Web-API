@@ -1,15 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using QuanLiTuyenXeBusDalat.Data;
 using QuanLiTuyenXeBusDalat.Models;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    
-    [Route("api/{v:apiVersion}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    [EnableRateLimiting("Api")]
+    //[Route("api/{v:apiVersion}/[controller]")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
     public class XeV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -18,11 +22,25 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             _context = context;
         }
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             try
             {
-                var dsXe = _context.Xes.ToList();
+                var Tuyen = _context.Xes.Include(t => t.Tuyen).ToList();
+                var dsXe = _context.Xes
+                     .Select(x => new
+                     {
+                         MaXe=x.MaXe,
+                         BienSo = x.BienSo,
+                         LoaiXe = x.LoaiXe,
+                         SoGhe = x.SoGhe,
+                         CongSuat = x.CongSuat,
+                         ChuKyBaoHanh = x.ChuKyBaoHanh,
+                         NgaySX = x.NgaySX,
+                         Tuyen=x.Tuyen
+                     });
+
                 return Ok(dsXe);
             }
             catch
@@ -32,20 +50,32 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpGet("id")]
-        [Authorize]
         public IActionResult GetById(int id)
         {
-            //SingleOrDefault: trả về giá trị mặc định của kiểu dữ liệu của danh sách nếu danh sách trống hoặc không tìm thấy bất kỳ phần tử nào thỏa mãn điều kiện
-            //hoặc có nhiều hơn một phần tử thỏa mãn điều kiện.
-            var dsXe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
-            if (dsXe != null)
-            {
-                return Ok(dsXe);
-            }
-            else
+            var query = from xe in _context.Xes
+                        join tuyen in _context.tuyens on xe.MaTuyen
+                        equals tuyen.MaTuyen
+                        where xe.MaTuyen == id
+                        select new
+                        {
+                            xe.MaXe,
+                            xe.MaTuyen,
+                            xe.BienSo,
+                            xe.ChuKyBaoHanh,
+                            xe.NgaySX,
+                            xe.LoaiXe,
+                            xe.CongSuat
+                        };
+            var result = query.FirstOrDefault();
+            if(result == null)
             {
                 return NotFound();
             }
+            return Ok(new ApiResponse
+            {
+                Success = true,
+                Data = result
+            });
         }
 
         // Thêm 
@@ -53,21 +83,28 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         [Authorize]
         //Phải cấu hình mới thực hiện thực được lệnh authorize
         // Phải đăng nhập mới được làm
-        public IActionResult CreateNew(XeModel xeModel)
+        public IActionResult CreateNew(XeVM XeModel)
         {
-
-            var xe = new Models.Xe
+            var maTuyen = _context.tuyens.FirstOrDefault(t => t.MaTuyen == XeModel.MaTuyen);
+            if (maTuyen == null)
             {
-                // Vì MaXe mình dang đặt cho nó là idnetity nên nó sẽ tự động tăng
+                return NotFound("Tuyen Id not found");
+            }
+            var xe = new Data.Xe
+            {
+                MaXe=0,
+                MaTuyen=XeModel.MaTuyen,
+                // Vì MaXe mình dang đặt cho nó là identity nên nó sẽ tự động tăng
                 // Không cần khai báo vào trong này
-                BienSo = xeModel.BienSo,
-                LoaiXe = xeModel.LoaiXe,
-                SoGhe = xeModel.SoGhe,
-                CongSuat = xeModel.CongSuat,
-                NgaySX = xeModel.NgaySX,
-                ChuKyBaoHanh = xeModel.ChuKyBaoHanh
+                BienSo = XeModel.BienSo,
+                LoaiXe = XeModel.LoaiXe,
+                SoGhe = XeModel.SoGhe,
+                CongSuat = XeModel.CongSuat,
+                NgaySX = XeModel.NgaySX,
+                ChuKyBaoHanh = XeModel.ChuKyBaoHanh
             };
-            _context.Add(xe);
+            _context.Xes.Add(xe);
+            _context.SaveChanges();
             return Ok(new
             {
                 Success = true,
@@ -77,11 +114,12 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
+   
         public IActionResult EditXe(int id, Models.Xe xeEdit)
         {
             try
             {
+                var maTuyen = _context.tuyens.FirstOrDefault(t => t.MaTuyen == xeEdit.MaTuyen);
                 var xe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
                 if(xe == null)
                 {
@@ -98,7 +136,12 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 xe.ChuKyBaoHanh = xeEdit.ChuKyBaoHanh;
                 xe.SoGhe = xeEdit.SoGhe;
                 xe.NgaySX = xeEdit.NgaySX;
-                return Ok();
+                xe.MaTuyen = xeEdit.MaTuyen;
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "cập nhật thành công xe có id là " + xe.MaXe
+                });
             }
             catch 
             {
@@ -118,7 +161,12 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                     return NotFound();
                 }
                 _context.Remove(xe);
-                return Ok();
+                _context.SaveChanges();
+                return Ok(new ApiResponse
+                {
+                    Success=true,
+                    Message="Đã xóa xe có id là"+xe.MaXe
+                });
             }
             catch 
             {

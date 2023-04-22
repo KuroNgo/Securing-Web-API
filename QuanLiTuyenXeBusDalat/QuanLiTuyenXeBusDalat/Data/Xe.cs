@@ -13,7 +13,7 @@ namespace QuanLiTuyenXeBusDalat.Data
 
         [Required]
         [MaxLength(50)]
-        public char BienSo { get; set; }
+        public string BienSo { get; set; }
         public string LoaiXe { get; set; }
 
         [Range(0,int.MaxValue)] // Giá trị số ghế phải lớn hơn 0 
@@ -29,6 +29,5 @@ namespace QuanLiTuyenXeBusDalat.Data
         [ForeignKey("MaTuyen")]
         public Tuyen Tuyen { get; set; }
 
-        public virtual ICollection<TaiXe> TaiXes { get; set; }
     }
 }
