@@ -15,7 +15,7 @@ using System.Text;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
 
-    [Route("api/[controller]")]
+    [Route("api/2.0/[controller]")]
     [ApiController]
     //[EnableRateLimiting("Api")]
     //[Route("api/{v:apiVersion}/[controller]")]
@@ -27,19 +27,19 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         private readonly AppSettings _appSettings;
         public static List<TaiKhoan> taiKhoans = new List<TaiKhoan>();
 
-       
+
         public UserV1Controller(MyDBContext myDBContext, IOptionsMonitor<AppSettings> optionsMonitor)
         {
             _context = myDBContext;
             _appSettings = optionsMonitor.CurrentValue;
         }
 
- 
+
         [HttpPost("Login")]
         public async Task<IActionResult> validate(LoginModel loginModel)
         {
-            var user = _context.taiKhoans.SingleOrDefault(p => p.UserName==loginModel.UserName && 
-            loginModel.Password==p.Password);
+            var user = _context.taiKhoans.SingleOrDefault(p => p.UserName == loginModel.UserName &&
+            loginModel.Password == p.Password);
 
             if (user == null)// Không đúng
             {
@@ -56,9 +56,9 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 Success = true,
                 Message = "Authenticate success",
                 Data = token
-            }) ;
+            });
         }
-      
+
         // Sinh mã token
         private async Task<TokenModel> GenerateToken(TaiKhoan taiKhoan)
         {
@@ -150,7 +150,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 // Check1: coi format accesstoken có ổn không 
-                var tokenInveritification = jwtTokenHandler.ValidateToken(tokenModel.AccessToken, 
+                var tokenInveritification = jwtTokenHandler.ValidateToken(tokenModel.AccessToken,
                     tokenValidateParameter, out var validatedToken);
 
                 // check2 : khác nhau về thuật toán
@@ -256,7 +256,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 });
             }
         }
-       
+
         private DateTime ConvertUnixTimeToDateTime(long utcExpireDate)
         {
             var dateTimeInterval = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);

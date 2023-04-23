@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -8,12 +9,14 @@ using QuanLiTuyenXeBusDalat.Models;
 
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
     [ApiController]
     [EnableRateLimiting("Api")]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
+    [EnableCors("MyCors2_AllowGETForGoogle")]
+    [Route("api/{v:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    [ApiVersion("3.0")]
     public class XeV1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
@@ -31,14 +34,14 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 var dsXe = _context.Xes
                      .Select(x => new
                      {
-                         MaXe=x.MaXe,
+                         MaXe = x.MaXe,
                          BienSo = x.BienSo,
                          LoaiXe = x.LoaiXe,
                          SoGhe = x.SoGhe,
                          CongSuat = x.CongSuat,
                          ChuKyBaoHanh = x.ChuKyBaoHanh,
                          NgaySX = x.NgaySX,
-                         Tuyen=x.Tuyen
+                         Tuyen = x.Tuyen
                      });
 
                 return Ok(dsXe);
@@ -49,7 +52,9 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             }
         }
 
+        [DisableCors]
         [HttpGet("id")]
+        [MapToApiVersion("2.0")]
         public IActionResult GetById(int id)
         {
             var query = from xe in _context.Xes
@@ -67,7 +72,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                             xe.CongSuat
                         };
             var result = query.FirstOrDefault();
-            if(result == null)
+            if (result == null)
             {
                 return NotFound();
             }
@@ -81,6 +86,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         // Thêm 
         [HttpPost]
         [Authorize]
+        [MapToApiVersion("3.0")]
         //Phải cấu hình mới thực hiện thực được lệnh authorize
         // Phải đăng nhập mới được làm
         public IActionResult CreateNew(XeVM XeModel)
@@ -92,8 +98,8 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             }
             var xe = new Data.Xe
             {
-                MaXe=0,
-                MaTuyen=XeModel.MaTuyen,
+                MaXe = 0,
+                MaTuyen = XeModel.MaTuyen,
                 // Vì MaXe mình dang đặt cho nó là identity nên nó sẽ tự động tăng
                 // Không cần khai báo vào trong này
                 BienSo = XeModel.BienSo,
@@ -114,14 +120,14 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         }
 
         [HttpPut("{id}")]
-   
+
         public IActionResult EditXe(int id, Models.Xe xeEdit)
         {
             try
             {
                 var maTuyen = _context.tuyens.FirstOrDefault(t => t.MaTuyen == xeEdit.MaTuyen);
                 var xe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
-                if(xe == null)
+                if (xe == null)
                 {
                     return NotFound();
                 }
@@ -143,7 +149,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                     Message = "cập nhật thành công xe có id là " + xe.MaXe
                 });
             }
-            catch 
+            catch
             {
                 return BadRequest();
             }
@@ -156,7 +162,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 var xe = _context.Xes.SingleOrDefault(xe => xe.MaXe == id);
-                if(xe == null)
+                if (xe == null)
                 {
                     return NotFound();
                 }
@@ -164,11 +170,11 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 _context.SaveChanges();
                 return Ok(new ApiResponse
                 {
-                    Success=true,
-                    Message="Đã xóa xe có id là"+xe.MaXe
+                    Success = true,
+                    Message = "Đã xóa xe có id là" + xe.MaXe
                 });
             }
-            catch 
+            catch
             {
                 return BadRequest();
             }

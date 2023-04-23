@@ -32,16 +32,36 @@ var builder = WebApplication.CreateBuilder(args);
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
     .Build();
-   
-    builder.Services.AddCors(options => options.AddPolicy("MyCors", build =>
+
+    #region cài đặt CORS
+    builder.Services.AddCors(options =>
     {
-        // Chỉ cho phép một vài trang web kết nối đến API
-        //build.WithOrigins("https://hienlth.info",
-        //"https://localhost:3000", "https://www.google.com");
-        // Cho phép mọi trang web kết nối đến API, sử dụng phương thức cho phép chấp
-        // nhận mọi phương thức và mọi header khi sử dụng api
-        build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
-    }));
+        options.AddPolicy("MyCors", build =>
+        {
+            // Chỉ cho phép một vài trang web kết nối đến API
+            //build.WithOrigins("https://hienlth.info",
+            //"https://localhost:3000", "https://www.google.com");
+            // Cho phép mọi trang web kết nối đến API, sử dụng phương thức cho phép chấp
+            // nhận mọi phương thức và mọi header khi sử dụng api
+            build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+        });
+
+        options.AddPolicy("MyCors2_AllowGETForGoogle", build =>
+        {
+            build.WithOrigins("*")
+                 .WithHeaders("Authorization", "Content-Type")
+                 .WithMethods("GET");
+
+        });
+        options.AddPolicy("MyCors3_AllowGP", build =>
+        {
+            build.WithOrigins("https://learn.microsoft.com")
+            .WithHeaders("X-Custom-Header")
+            .WithMethods("GET", "POST");
+        });
+    });
+    ;
+    #endregion
     builder.Services.AddApiVersioning(x =>
     {
         //DefaultApiVersion được sử dụng để đặt phiên bản mặc định thành API
@@ -152,8 +172,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+
 #region CORS
 app.UseCors("MyCors");
+app.UseCors("MyCors2_AllowGETForGoogle");
+app.UseCors("MyCors3_AllowGP");
+
 #endregion
 
 app.UseRouting();

@@ -11,20 +11,16 @@ using System.ComponentModel.DataAnnotations;
 namespace QuanLiTuyenXeBusDalat.Controllers
 {
     // THông tin của bảng này được lấy từ database
-    [Route("api/[controller]")]
+    [Route("api/3.0/[controller]")]
     [ApiController]
-    //[EnableRateLimiting("Api")]
-    //[Route("api/{v:apiVersion}/[controller]")]
-    //[ApiController]
-    //[ApiVersion("1.0")]
-    //[DisableCors]
+
     public class Tuyen2V1Controller : ControllerBase
     {
         private readonly MyDBContext _context;
 
         public Tuyen2V1Controller(MyDBContext myDBContext)
         {
-            _context=myDBContext;
+            _context = myDBContext;
         }
 
         [HttpGet]
@@ -32,11 +28,11 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         //Interface dùng để trả về cho các action
         public IActionResult GetAll()
         {
-           
+
             // Trả về danh sách các hàng hóa
             try
             {
-                var tuyens=_context.tuyens.Include(t => t.DonViQuanLiXe).ToList();
+                var tuyens = _context.tuyens.Include(t => t.DonViQuanLiXe).ToList();
                 return Ok(new ApiResponse
                 {
                     Success = true,
@@ -53,13 +49,20 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         public IActionResult GetByID(int id)
         {
             var query = from t in _context.tuyens
-                        join dvql in _context.donViQuanLiXes on t.MaDonVi 
+                        join dvql in _context.donViQuanLiXes on t.MaDonVi
                         equals dvql.MaDonVi
                         where t.MaDonVi == id
-                        select new { t.TenTuyen, t.LoaiTuyen, 
-                            TenDonVi = dvql.TenDonVi, t.LoTrinhLuotDi,
-                            t.LoTrinhLuotVe, t.ThoiGianBatDau,
-                            t.ThoiGianGianCach, t.ThoiGianKetThuc };
+                        select new
+                        {
+                            t.TenTuyen,
+                            t.LoaiTuyen,
+                            TenDonVi = dvql.TenDonVi,
+                            t.LoTrinhLuotDi,
+                            t.LoTrinhLuotVe,
+                            t.ThoiGianBatDau,
+                            t.ThoiGianGianCach,
+                            t.ThoiGianKetThuc
+                        };
             var result = query.FirstOrDefault();
             if (result == null)
             {
@@ -69,7 +72,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             return Ok(new ApiResponse
             {
                 Success = true,
-                Data=result
+                Data = result
             });
         }
 
@@ -77,19 +80,19 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] TuyenVM tuyenVM)
         {
-            var MaDonVi = _context.donViQuanLiXes.FirstOrDefault(dvql => 
+            var MaDonVi = _context.donViQuanLiXes.FirstOrDefault(dvql =>
             dvql.MaDonVi == tuyenVM.MaDonVi);
-            
+
             if (MaDonVi == null)
             {
                 return NotFound("DonViQuanLiXe not found");
             }
 
-            
+
             var tuyen = new Data.Tuyen
             {
-                MaTuyen=0,
-                MaDonVi=tuyenVM.MaDonVi,
+                MaTuyen = 0,
+                MaDonVi = tuyenVM.MaDonVi,
                 TenTuyen = tuyenVM.TenTuyen,
                 ThoiGianBatDau = tuyenVM.ThoiGianBatDau,
                 ThoiGianKetThuc = tuyenVM.ThoiGianKetThuc,
@@ -112,7 +115,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
         {
             try
             {
-                var maDVQL=_context.donViQuanLiXes.FirstOrDefault(dvql => dvql.MaDonVi == id);
+                var maDVQL = _context.donViQuanLiXes.FirstOrDefault(dvql => dvql.MaDonVi == id);
                 //LINQ [Object] Query
                 var tuyen = _context.tuyens.SingleOrDefault(t => t.MaTuyen == id);
                 if (tuyen == null) { return NotFound(); }
@@ -128,8 +131,8 @@ namespace QuanLiTuyenXeBusDalat.Controllers
                 tuyen.MaDonVi = tuyenEdit.MaDonVi;
                 return Ok(new ApiResponse
                 {
-                    Success=true,
-                    Message="Thay đổi thành công"
+                    Success = true,
+                    Message = "Thay đổi thành công"
                 });
             }
             catch
@@ -144,7 +147,7 @@ namespace QuanLiTuyenXeBusDalat.Controllers
             try
             {
                 var tuyen = _context.tuyens.SingleOrDefault(t => t.MaTuyen == id);
-                if (tuyen != null) 
+                if (tuyen != null)
                 {
                     _context.Remove(tuyen);
                     _context.SaveChanges();
